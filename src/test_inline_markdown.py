@@ -3,6 +3,8 @@ from inline_markdown import (
     split_nodes_delimiter,
     extract_markdown_images,
     extract_markdown_links,
+    split_nodes_image,
+    split_nodes_link,
 )
 
 from textnode import (
@@ -11,6 +13,8 @@ from textnode import (
     text_type_bold,
     text_type_italic,
     text_type_code,
+    text_type_image,
+    text_type_link,
 )
 
 
@@ -105,6 +109,63 @@ class TestInlineMarkdown(unittest.TestCase):
                 ("another", "https://www.example.com/another"),
             ],
             links,
+        )
+
+    def test_split_nodes_image(self):
+        node = TextNode(
+            "This contains an image ![python logo](https://storage.googleapis.com/qvault-webapp-dynamic-assets/course_assets/zjjcJKZ.png) and another image ![test](https://example.com)",
+            text_type_text,
+        )
+        new_nodes = split_nodes_image([node])
+        self.assertListEqual(
+            [
+                TextNode("This contains an image ", text_type_text),
+                TextNode(
+                    "python logo",
+                    text_type_image,
+                    "https://storage.googleapis.com/qvault-webapp-dynamic-assets/course_assets/zjjcJKZ.png",
+                ),
+                TextNode(" and another image ", text_type_text),
+                TextNode("test", text_type_image, "https://example.com"),
+            ],
+            new_nodes,
+        )
+
+    def test_split_nodes_only_image(self):
+        node = TextNode(
+            "![python logo](https://storage.googleapis.com/qvault-webapp-dynamic-assets/course_assets/zjjcJKZ.png)",
+            text_type_text,
+        )
+        new_nodes = split_nodes_image([node])
+        self.assertListEqual(
+            [
+                TextNode(
+                    "python logo",
+                    text_type_image,
+                    "https://storage.googleapis.com/qvault-webapp-dynamic-assets/course_assets/zjjcJKZ.png",
+                )
+            ],
+            new_nodes,
+        )
+
+    def test_split_nodes_link(self):
+        node = TextNode(
+            "This contains a link [boot.dev](https://www.boot.dev) and another link [test](https://example.com)",
+            text_type_text,
+        )
+        new_nodes = split_nodes_link([node])
+        self.assertListEqual(
+            [
+                TextNode("This contains a link ", text_type_text),
+                TextNode(
+                    "boot.dev",
+                    text_type_link,
+                    "https://www.boot.dev",
+                ),
+                TextNode(" and another link ", text_type_text),
+                TextNode("test", text_type_link, "https://example.com"),
+            ],
+            new_nodes,
         )
 
 
